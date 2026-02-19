@@ -74,3 +74,24 @@ app.get('/api/ventas', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 Servidor de Tsunami Viajes corriendo en http://localhost:${PORT}`);
 });
+// --- RUTA 5: CREAR UNA RESERVA (CORREGIDA) ---
+app.post('/api/reservar', (req, res) => {
+  // Recibimos también el id del usuario que hace la compra
+  const { id_usuario, id_viaje, precio } = req.body;
+  
+  // Usamos 'bookings' porque es la tabla que ya tienes creada
+  // 'package_id' en tu DB es un VARCHAR, por eso usamos el código del país o ID
+  const query = 'INSERT INTO bookings (user_id, package_id, total_paid, status) VALUES (?, ?, ?, "confirmed")';
+
+  db.execute(query, [id_usuario, id_viaje, precio], (err, result) => {
+    if (err) {
+      console.error('❌ Error al insertar reserva:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    
+    res.status(201).json({ 
+      mensaje: 'Reserva realizada con éxito', 
+      id_reserva: result.insertId 
+    });
+  });
+});

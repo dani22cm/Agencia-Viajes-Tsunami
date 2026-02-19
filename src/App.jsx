@@ -69,7 +69,7 @@ function App() {
         {(() => {
           switch (true) {
             case route === '#paises' || route === '#/paises':
-              // Se pasa el usuario para ejecutar el PROCEDURE de compra
+              // Se pasa el usuario para poder realizar la reserva en la tabla bookings
               return <Paises user={usuarioLogueado} />
             
             case route.startsWith('#noticias') || route.startsWith('#/noticias'):
@@ -77,7 +77,7 @@ function App() {
 
             // --- NUEVA RUTA: ESTADÍSTICAS (PROTEGIDA) ---
             case route === '#estadisticas' || route === '#/estadisticas':
-              // Validación de seguridad: Comprobamos el campo 'role' de la base de datos
+              // Validación de seguridad: Solo admins pueden entrar
               if (usuarioLogueado?.role === 'admin') {
                 return <Estadisticas />
               } else {
