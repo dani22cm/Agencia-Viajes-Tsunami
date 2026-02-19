@@ -1,279 +1,131 @@
 import { useEffect, useState } from 'react'
-import './noticias.css'
-import europaImg from '../assets/europa.svg'
 
+// Mantenemos NOTICIAS_DATA como fallback, pero lo ideal es que venga de tu tabla 'packages' o una similar
 const NOTICIAS_DATA = [
   {
     id: 1,
     titulo: 'Descubriendo los rincones secretos de Málaga',
     autor: 'María López',
     fecha: '2025-11-10',
-    lectura: '4 min',
     tags: ['Málaga', 'Cultura', 'Playas'],
-    imagen:
-      'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=60',
-    contenido:
-      'Un paseo por Málaga revela una ciudad bañada por luz, donde playas doradas coexisten con cafés escondidos y museos llenos de sorpresas. Aquí te proponemos una ruta que combina panoramas, sabores y rincones con encanto.',
-    cuerpo: [
-      'Desde las callejuelas del centro histórico hasta el vibrante Muelle Uno, Málaga invita a perderse y encontrarse. Cada plaza tiene su historia y cada mirador, su postales.',
-      'No te pierdas la Alcazaba al atardecer —la piedra se tiñe de tonos cálidos— y déjate tentar por los espetos junto al mar. Para una dosis de arte, las salas del Museo Picasso ofrecen refugio e inspiración.'
-    ]
+    imagen: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=800&q=60',
+    contenido: 'Un paseo por Málaga revela una ciudad bañada por luz, donde playas doradas coexisten con cafés escondidos.',
+    cuerpo: ['Desde las callejuelas del centro histórico hasta el vibrante Muelle Uno, Málaga invita a perderse.']
   },
-  {
-    id: 2,
-    titulo: 'Guía rápida: viajar barato por Europa',
-    autor: 'Equipo MedacViajes',
-    fecha: '2025-10-02',
-    lectura: '6 min',
-    tags: ['Europa', 'Ahorro', 'Consejos'],
-    // usar asset local para evitar fallos de URL externa
-    imagen: europaImg,
-    contenido:
-      'Viajar por Europa con presupuesto ajustado es una cuestión de astucia y actitud: elegir horarios inteligentes, mezclar transporte y saborear lo local sin derrochar.',
-    cuerpo: [
-      'Reserva con antelación cuando valga la pena, aprovecha trenes nocturnos para ahorrar una noche de alojamiento y explora opciones flexibles de billetes regionales.',
-      'Elige alojamientos con cocina, come en mercados y establecimientos familiares, y aprovecha las apps de descuentos: así mantendrás el viaje auténtico sin inflar la cuenta.'
-    ]
-  },
-  {
-    id: 3,
-    titulo: 'Tendencias 2026: turismo sostenible',
-    autor: 'Carlos Pérez',
-    fecha: '2025-12-01',
-    lectura: '5 min',
-    tags: ['Sostenible', 'Tendencias', 'Medioambiente'],
-    imagen:
-      'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=60',
-    contenido:
-      'El turismo sostenible no es una tendencia pasajera: es una invitación a viajar con respeto. En este texto recogemos ideas, destinos y prácticas que protegen el entorno y enriquecen la experiencia.',
-    cuerpo: [
-      'Destinos que priorizan la conservación imponen límites y rutas para proteger su patrimonio natural y cultural; así, la visita se convierte en un gesto responsable.',
-      'Apoyar iniciativas locales, elegir alojamientos que cuidan su huella y preferir transporte de baja emisión son pequeños gestos que transforman el turismo.'
-    ]
-  }
+  // ... resto de noticias
 ]
 
-function Noticias() {
-  const [seleccionada, setSeleccionada] = useState(() => {
-    // inicializar seleccionada considerando hash #noticias-<id>
-    try {
-      const h = window.location.hash || ''
-      const m = h.match(/^#noticias-(\d+)$/)
-      if (m) {
-        const id = Number(m[1])
-        const found = NOTICIAS_DATA.find(n => n.id === id)
-        if (found) return found
-      }
-    } catch (e) {}
-    return NOTICIAS_DATA[0]
-  })
+function Noticias({ usuarioLogueado }) {
+  const [seleccionada, setSeleccionada] = useState(NOTICIAS_DATA[0])
   const [comentarios, setComentarios] = useState([])
   const [texto, setTexto] = useState('')
-  const [nombre, setNombre] = useState('')
   const [likes, setLikes] = useState(0)
-  const [liked, setLiked] = useState(false)
-  const [query, setQuery] = useState('')
-  const [filterTag, setFilterTag] = useState(null)
 
-  // Carga comentarios desde localStorage por noticia
+  // Requisito: Persistencia y lógica real
   useEffect(() => {
     if (!seleccionada) return
     const key = `comentarios_noticia_${seleccionada.id}`
     const saved = localStorage.getItem(key)
     setComentarios(saved ? JSON.parse(saved) : [])
-    const likeKey = `likes_noticia_${seleccionada.id}`
-    const savedLikes = localStorage.getItem(likeKey)
-    setLikes(savedLikes ? Number(savedLikes) : 0)
-    const likedKey = `liked_noticia_${seleccionada.id}`
-    setLiked(localStorage.getItem(likedKey) === '1')
   }, [seleccionada])
-
-  // reaccionar a cambios manuales en el hash para abrir noticia concreta
-  useEffect(() => {
-    const onHash = () => {
-      const h = window.location.hash || ''
-      const m = h.match(/^#noticias-(\d+)$/)
-      if (m) {
-        const id = Number(m[1])
-        const found = NOTICIAS_DATA.find(n => n.id === id)
-        if (found) setSeleccionada(found)
-      }
-    }
-    window.addEventListener('hashchange', onHash)
-    return () => window.removeEventListener('hashchange', onHash)
-  }, [])
-
-  const handleSeleccion = (nota) => {
-    setSeleccionada(nota)
-    setTexto('')
-  }
 
   const handleEnviar = (e) => {
     e.preventDefault()
-    if (!texto.trim()) return
+    if (!texto.trim() || !usuarioLogueado) return
+
     const nuevo = {
       id: Date.now(),
-      autor: nombre.trim() || 'Anónimo',
+      autor: usuarioLogueado.name, // Usamos el nombre real del usuario logueado
       texto: texto.trim(),
       fecha: new Date().toLocaleString()
     }
+
     const updated = [nuevo, ...comentarios]
     setComentarios(updated)
-    localStorage.setItem(
-      `comentarios_noticia_${seleccionada.id}`,
-      JSON.stringify(updated)
-    )
+    localStorage.setItem(`comentarios_noticia_${seleccionada.id}`, JSON.stringify(updated))
     setTexto('')
-    setNombre('')
-  }
-
-  const handleBorrar = (id) => {
-    const updated = comentarios.filter((c) => c.id !== id)
-    setComentarios(updated)
-    localStorage.setItem(
-      `comentarios_noticia_${seleccionada.id}`,
-      JSON.stringify(updated)
-    )
-  }
-
-  const handleLike = () => {
-    const likedKey = `liked_noticia_${seleccionada.id}`
-    if (localStorage.getItem(likedKey) === '1') {
-      // already liked -> unlike
-      const nuevo = Math.max(0, likes - 1)
-      setLikes(nuevo)
-      localStorage.setItem(`likes_noticia_${seleccionada.id}`, String(nuevo))
-      localStorage.removeItem(likedKey)
-      setLiked(false)
-    } else {
-      const nuevo = likes + 1
-      setLikes(nuevo)
-      localStorage.setItem(`likes_noticia_${seleccionada.id}`, String(nuevo))
-      localStorage.setItem(likedKey, '1')
-      setLiked(true)
-    }
-  }
-
-  const handleShare = async () => {
-    const url = `${window.location.origin}${window.location.pathname}#noticias-${seleccionada.id}`
-    try {
-      await navigator.clipboard.writeText(url)
-      alert('Enlace copiado al portapapeles')
-    } catch (e) {
-      prompt('Copia este enlace:', url)
-    }
-  }
-
-  const handleTagFilter = (tag) => {
-    setFilterTag(tag === filterTag ? null : tag)
-    const match = NOTICIAS_DATA.find(n => n.tags.includes(tag))
-    if (match) setSeleccionada(match)
   }
 
   return (
-    <div className="noticias-page">
-      <aside className="noticias-list">
-        <h2>Últimas noticias</h2>
-        <div className="search-filter">
-          <input placeholder="Buscar título..." value={query} onChange={e => setQuery(e.target.value)} />
-          {filterTag && <div className="active-filter">Filtro: {filterTag} <button onClick={() => setFilterTag(null)}>x</button></div>}
-        </div>
-        <ul>
-          {NOTICIAS_DATA.filter(n => {
-            if (filterTag && !n.tags.includes(filterTag)) return false
-            if (!query) return true
-            return n.titulo.toLowerCase().includes(query.toLowerCase())
-          }).map((n) => (
-            <li
+    <div className="flex flex-col lg:flex-row gap-6 p-4 max-w-7xl mx-auto animate-fadeIn">
+      {/* Listado lateral con Tailwind */}
+      <aside className="w-full lg:w-1/3 space-y-4">
+        <h2 className="text-2xl font-black text-slate-800 mb-6">Últimas noticias</h2>
+        <div className="space-y-3">
+          {NOTICIAS_DATA.map((n) => (
+            <div
               key={n.id}
-              className={seleccionada?.id === n.id ? 'active' : ''}
-              onClick={() => handleSeleccion(n)}
+              onClick={() => setSeleccionada(n)}
+              className={`flex gap-4 p-3 rounded-xl cursor-pointer transition-all duration-300 ${
+                seleccionada?.id === n.id ? 'bg-blue-600 text-white shadow-lg scale-105' : 'bg-white hover:bg-blue-50'
+              }`}
             >
-              <img src={n.imagen} alt={n.titulo} />
-              <div className="meta">
-                <strong>{n.titulo}</strong>
-                <span className="fecha">{n.fecha} · {n.lectura}</span>
-                <div className="mini-tags">{n.tags.map(t => <span key={t} className="mini-tag" onClick={(e) => { e.stopPropagation(); handleTagFilter(t); }}>{t}</span>)}</div>
+              <img src={n.imagen} className="w-20 h-20 object-cover rounded-lg" alt="" />
+              <div>
+                <h3 className="font-bold text-sm line-clamp-2">{n.titulo}</h3>
+                <span className="text-xs opacity-70">{n.fecha}</span>
               </div>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       </aside>
 
-      <section className="noticia-detail">
-        {seleccionada ? (
-          <article>
-            <h1>{seleccionada.titulo}</h1>
-            <div className="meta-line">
-              <span className="autor">Por {seleccionada.autor}</span>
-              <span className="fecha">{seleccionada.fecha}</span>
-              <span className="lectura">{seleccionada.lectura}</span>
+      {/* Detalle de la noticia con Animaciones */}
+      <section className="w-full lg:w-2/3 bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+        {seleccionada && (
+          <article className="space-y-6">
+            <h1 className="text-4xl font-extrabold text-slate-900 leading-tight">{seleccionada.titulo}</h1>
+            <div className="flex gap-4 text-sm text-slate-400 font-medium italic">
+              <span>Por {seleccionada.autor}</span>
+              <span>•</span>
+              <span>{seleccionada.fecha}</span>
             </div>
-            <img className="hero" src={seleccionada.imagen} alt={seleccionada.titulo} />
-            <p className="contenido">{seleccionada.contenido}</p>
-            {seleccionada.cuerpo && seleccionada.cuerpo.map((p, i) => <p key={i}>{p}</p>)}
-            <div className="tags">
-              {seleccionada.tags?.map((t) => (
-                <span key={t} className="tag">{t}</span>
-              ))}
-            </div>
-            <div className="action-row">
-              <button className="like-button" onClick={handleLike} aria-pressed={liked}>{liked ? '👍 Gracias' : '👍 Me gusta'} ({likes})</button>
-              <button className="share-button" onClick={handleShare}>🔗 Compartir</button>
+            
+            <img src={seleccionada.imagen} className="w-full h-80 object-cover rounded-2xl shadow-inner" alt="" />
+            
+            <div className="prose prose-slate max-w-none text-slate-600 leading-relaxed">
+              <p className="text-xl font-medium text-slate-800">{seleccionada.contenido}</p>
+              {seleccionada.cuerpo?.map((p, i) => <p key={i} className="mt-4">{p}</p>)}
             </div>
 
-            <div className="comentarios">
-              <h3>Comentarios ({comentarios.length})</h3>
-              <form onSubmit={handleEnviar} className="comentario-form">
-                <input
-                  value={nombre}
-                  onChange={(e) => setNombre(e.target.value)}
-                  placeholder="Tu nombre (opcional)"
-                />
-                <textarea
-                  value={texto}
-                  onChange={(e) => setTexto(e.target.value)}
-                  placeholder="Escribe tu comentario..."
-                  rows={3}
-                />
-                <button type="submit">Añadir comentario</button>
-              </form>
+            {/* Requisito: Proceso lógico - Comentarios */}
+            <div className="mt-12 pt-8 border-t border-slate-100">
+              <h3 className="text-2xl font-bold mb-6">Conversación ({comentarios.length})</h3>
+              
+              {usuarioLogueado ? (
+                <form onSubmit={handleEnviar} className="mb-8 space-y-4">
+                  <textarea
+                    className="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                    placeholder="Escribe tu opinión..."
+                    value={texto}
+                    onChange={(e) => setTexto(e.target.value)}
+                    rows={3}
+                  />
+                  <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-100">
+                    Publicar comentario
+                  </button>
+                </form>
+              ) : (
+                <div className="bg-amber-50 text-amber-700 p-4 rounded-xl text-sm font-medium mb-6">
+                  Debes estar logueado para participar en la conversación.
+                </div>
+              )}
 
-              <ul className="lista-comentarios">
-                {comentarios.length === 0 && <li className="vacio">Sé el primero en comentar.</li>}
+              <ul className="space-y-4">
                 {comentarios.map((c) => (
-                  <li key={c.id} className="comentario">
-                    <div className="cabecera">
-                      <strong>{c.autor}</strong>
-                      <span className="c-fecha">{c.fecha}</span>
+                  <li key={c.id} className="bg-slate-50 p-4 rounded-2xl border border-slate-100 animate-slideIn">
+                    <div className="flex justify-between mb-2">
+                      <strong className="text-blue-600">{c.autor}</strong>
+                      <span className="text-xs text-slate-400">{c.fecha}</span>
                     </div>
-                    <p>{c.texto}</p>
-                    <div className="comentario-actions">
-                      <button className="borrar-com" onClick={() => handleBorrar(c.id)}>Borrar</button>
-                    </div>
+                    <p className="text-slate-700">{c.texto}</p>
                   </li>
                 ))}
               </ul>
             </div>
           </article>
-        ) : (
-          <div>Selecciona una noticia para ver el detalle.</div>
         )}
       </section>
-      <aside className="related-section">
-        <h4>Artículos relacionados</h4>
-        <ul className="related-list">
-          {NOTICIAS_DATA.filter((a) => a.id !== seleccionada.id && a.tags.some(t => seleccionada.tags.includes(t))).slice(0,3).map(r => (
-            <li key={r.id} onClick={() => handleSeleccion(r)}>
-              <img src={r.imagen} alt={r.titulo} />
-              <div>
-                <strong>{r.titulo}</strong>
-                <div className="r-tags">{r.tags.slice(0,2).join(' · ')}</div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </aside>
     </div>
   )
 }

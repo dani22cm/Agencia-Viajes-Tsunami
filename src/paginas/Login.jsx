@@ -1,44 +1,98 @@
 import { useState } from 'react'
-import './Login.css'
 
 function Login({ onLogin, backgroundImage }) {
-  const [usuario, setUsuario] = useState('')
-  const [contrasena, setContrasena] = useState('')
+  // Usamos 'email' porque así está definido en tu tabla 'users'
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    if (usuario && contrasena) {
-      onLogin(usuario)
-      try { if (typeof window !== 'undefined' && window.location) window.location.hash = '#inicio' } catch(e) {}
+    setError('')
+
+    try {
+      // Conexión con el endpoint del server.js
+      const response = await fetch('http://localhost:3000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        // Pasamos el objeto usuario y el token al estado global de App.jsx
+        onLogin(data) 
+      } else {
+        setError(data.error || 'Error al iniciar sesión')
+      }
+    } catch (err) {
+      setError('No se pudo conectar con el servidor')
     }
   }
 
   const containerStyle = backgroundImage
-    ? { backgroundImage: `url(${backgroundImage})` }
+    ? { backgroundImage: `url(${backgroundImage})`, backgroundSize: 'cover' }
     : {}
 
   return (
-    <div className="login-container" style={containerStyle}>
-      <form onSubmit={handleSubmit} className="login-form">
-        <a href="#inicio" className="back-btn" title="Volver al inicio" aria-label="Volver al inicio">
-          <svg className="back-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M15 18L9 12L15 6" stroke="#21313a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
-          <span className="back-label">Volver</span>
-        </a>
-        <h1>Login</h1>
-        <input
-          type="text"
-          placeholder="Usuario"
-          value={usuario}
-          onChange={(e) => setUsuario(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Contraseña"
-          value={contrasena}
-          onChange={(e) => setContrasena(e.target.value)}
-        />
-        <button type="submit">Entrar</button>
-      </form>
+    <div 
+      className="min-h-screen flex items-center justify-center p-4" 
+      style={containerStyle}
+    >
+      {/* Tarjeta con Tailwind y efectos de entrada (Animaciones visibles) */}
+      <div className="bg-white/90 backdrop-blur-sm p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all hover:scale-[1.01] duration-300 animate-fadeIn">
+        
+        <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
+          <div className="text-center">
+            <h1 className="text-4xl font-black text-blue-900 mb-2">Bienvenido</h1>
+            <p className="text-gray-500 text-sm">Ingresa a tu cuenta de Agencia Tsunami</p>
+          </div>
+
+          {error && (
+            <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-3 text-sm rounded">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Email</label>
+              <input
+                type="email"
+                required
+                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                placeholder="ejemplo@correo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-gray-400 uppercase ml-1">Contraseña</label>
+              <input
+                type="password"
+                required
+                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <button 
+            type="submit"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
+          >
+            Entrar a la Agencia
+          </button>
+
+          <p className="text-center text-gray-400 text-xs">
+            Al entrar aceptas los términos de servicio y privacidad.
+          </p>
+        </form>
+      </div>
     </div>
   )
 }

@@ -9,49 +9,50 @@ import Paises from './paginas/Paises'
 import Noticias from './paginas/Noticias'
 import Register from './paginas/Register'
 
+// Importante: Tailwind gestionará casi todo, pero mantenemos App.css para ajustes globales
 import './App.css'
 
 function App() {
-  const [usuarioLogueado, setUsuarioLogueado] = useState(null)
-
-  const [route, setRoute] = useState(() => {
-    try {
-      return typeof window !== 'undefined' && window.location ? window.location.hash : ''
-    } catch (e) {
-      return ''
-    }
+  // Estado global del usuario (Requisito: Persistencia y estado real)
+  const [usuarioLogueado, setUsuarioLogueado] = useState(() => {
+    const saved = localStorage.getItem('usuario_tsunami')
+    return saved ? JSON.parse(saved) : null
   })
 
+  const [route, setRoute] = useState(window.location.hash || '#inicio')
+
+  // Manejo de navegación por Hash
   useEffect(() => {
-    const onHash = () => setRoute(window.location.hash || '')
+    const onHash = () => setRoute(window.location.hash || '#inicio')
     window.addEventListener('hashchange', onHash)
-    onHash()
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
+  // Guardar sesión cuando cambia el usuario
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.location && !window.location.hash) {
-        window.location.hash = '#inicio'
-      }
-    } catch (e) {}
-  }, [])
+    if (usuarioLogueado) {
+      localStorage.setItem('usuario_tsunami', JSON.stringify(usuarioLogueado))
+    } else {
+      localStorage.removeItem('usuario_tsunami')
+      localStorage.removeItem('token_tsunami')
+    }
+  }, [usuarioLogueado])
 
-  const handleLogin = (usuario) => {
-    setUsuarioLogueado(usuario)
+  const handleLogin = (datosServidor) => {
+    // datosServidor viene del backend: { user: {id, name, role}, token }
+    setUsuarioLogueado(datosServidor.user)
+    localStorage.setItem('token_tsunami', datosServidor.token)
+    window.location.hash = '#inicio'
   }
 
   const handleLogout = () => {
     setUsuarioLogueado(null)
-    try {
-      if (typeof window !== 'undefined' && window.location) {
-        window.location.hash = '#inicio'
-      }
-    } catch (e) {}
-
-    try { setRoute('') } catch (e) {}
+    window.location.hash = '#inicio'
   }
 
+  // --- Lógica de Renderizado de Rutas ---
+
+  // Páginas de acceso sin Header/Footer
   if (route === '#login' || route === '#/login') {
     return <Login onLogin={handleLogin} backgroundImage="/images/fondos/1456.jpg" />
   }
@@ -60,43 +61,35 @@ function App() {
     return <Register onRegister={handleLogin} backgroundImage="/images/fondos/1460.jpg" />
   }
 
-  if (route === '#/paises' || route === '#paises') {
-    return (
-      <div className="app-container">
-        <Header usuario={usuarioLogueado} onLogout={handleLogout} />
-        <main className="main-content">
-          <Paises/>
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
-  if (
-    route === '#/noticias' ||
-    route.startsWith('#noticias') ||
-    route === '#/noticias' ||
-    route.startsWith('#/noticias')
-  ) {
-    return (
-      <div className="app-container">
-        <Header usuario={usuarioLogueado} onLogout={handleLogout} />
-        <main className="main-content">
-          <Noticias />
-        </main>
-        <Footer />
-      </div>
-    )
-  }
-
+  // Estructura común para el resto de la App
   return (
-    <div className="app-container">
+    <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900">
+      {/* Requisito: El Header debe reaccionar al estado (mostrar login o cerrar sesión) */}
       <Header usuario={usuarioLogueado} onLogout={handleLogout} />
-      <main className="main-content">
-        <Bloque1 usuario={usuarioLogueado} onLogout={handleLogout} />
-        <Bloque2 usuario={usuarioLogueado} onLogout={handleLogout} />
-        <Bloque3 usuario={usuarioLogueado} onLogout={handleLogout} />
+
+      <main className="flex-grow">
+        {(() => {
+          switch (true) {
+            case route === '#paises' || route === '#/paises':
+              // Pasamos el usuario a Paises para que pueda ejecutar el PROCEDURE de compra
+              return <Paises user={usuarioLogueado} />
+            
+            case route.startsWith('#noticias') || route.startsWith('#/noticias'):
+              return <Noticias usuarioLogueado={usuarioLogueado} />
+            
+            case route === '#inicio' || route === '':
+            default:
+              return (
+                <div className="animate-fadeIn">
+                  <Bloque1 usuario={usuarioLogueado} />
+                  <Bloque2 />
+                  <Bloque3 />
+                </div>
+              )
+          }
+        })()}
       </main>
+
       <Footer />
     </div>
   )
