@@ -3,6 +3,14 @@ import { useState } from 'react'
 function Header({ usuario, onLogout }) {
   const [isHovered, setIsHovered] = useState(false)
 
+  // Lista base de navegación
+  const navItems = ['inicio', 'paises', 'noticias']
+  
+  // Si el usuario es admin, añadimos estadísticas a la lista
+  if (usuario?.role === 'admin') {
+    navItems.push('estadisticas')
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -23,16 +31,20 @@ function Header({ usuario, onLogout }) {
             </h1>
           </div>
 
-          {/* Navegación Central */}
+          {/* Navegación Central - DINÁMICA */}
           <nav className="hidden md:flex items-center gap-8">
-            {['inicio', 'paises', 'noticias'].map((item) => (
+            {navItems.map((item) => (
               <a 
                 key={item}
                 href={`#${item}`} 
-                className="text-sm font-bold text-slate-600 hover:text-blue-600 uppercase tracking-widest transition-colors relative group"
+                className={`text-sm font-bold uppercase tracking-widest transition-colors relative group ${
+                  item === 'estadisticas' ? 'text-indigo-600' : 'text-slate-600 hover:text-blue-600'
+                }`}
               >
                 {item}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-blue-600 transition-all group-hover:w-full"></span>
+                <span className={`absolute -bottom-1 left-0 h-0.5 transition-all group-hover:w-full ${
+                  item === 'estadisticas' ? 'bg-indigo-600 w-0' : 'bg-blue-600 w-0'
+                }`}></span>
               </a>
             ))}
           </nav>
