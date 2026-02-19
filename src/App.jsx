@@ -8,9 +8,11 @@ import Bloque3 from './componentes/Bloque3'
 import Paises from './paginas/Paises'
 import Noticias from './paginas/Noticias'
 import Register from './paginas/Register'
+// --- NUEVO: IMPORTACIÓN DE LA PÁGINA DE ESTADÍSTICAS ---
+import Estadisticas from './paginas/Estadisticas' 
 
 function App() {
-  // Estado global del usuario (Requisito: Persistencia y estado real)
+  // Estado global del usuario (Persistencia en localStorage)
   const [usuarioLogueado, setUsuarioLogueado] = useState(() => {
     const saved = localStorage.getItem('usuario_tsunami')
     return saved ? JSON.parse(saved) : null
@@ -58,21 +60,35 @@ function App() {
     return <Register onRegister={handleLogin} backgroundImage="/images/fondos/1460.jpg" />
   }
 
-  // Estructura común para el resto de la App
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* Requisito: El Header debe reaccionar al estado (mostrar login o cerrar sesión) */}
+      {/* El Header reacciona al rol del usuario para mostrar el botón de Admin */}
       <Header usuario={usuarioLogueado} onLogout={handleLogout} />
 
       <main className="flex-grow">
         {(() => {
           switch (true) {
             case route === '#paises' || route === '#/paises':
-              // Pasamos el usuario a Paises para que pueda ejecutar el PROCEDURE de compra
+              // Se pasa el usuario para ejecutar el PROCEDURE de compra
               return <Paises user={usuarioLogueado} />
             
             case route.startsWith('#noticias') || route.startsWith('#/noticias'):
               return <Noticias usuarioLogueado={usuarioLogueado} />
+
+            // --- NUEVA RUTA: ESTADÍSTICAS (PROTEGIDA) ---
+            case route === '#estadisticas' || route === '#/estadisticas':
+              // Validación de seguridad: Comprobamos el campo 'role' de la base de datos
+              if (usuarioLogueado?.role === 'admin') {
+                return <Estadisticas />
+              } else {
+                return (
+                  <div className="flex flex-col items-center justify-center p-20">
+                    <h2 className="text-2xl font-bold text-red-600">🚫 Acceso Restringido</h2>
+                    <p className="text-slate-600">Esta sección solo es accesible para administradores.</p>
+                    <a href="#inicio" className="mt-4 text-blue-500 underline">Volver al inicio</a>
+                  </div>
+                )
+              }
             
             case route === '#inicio' || route === '':
             default:
