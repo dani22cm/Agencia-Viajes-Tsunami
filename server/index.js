@@ -140,6 +140,19 @@ app.post('/api/wallet/recargar', (req, res) => {
     res.json({ mensaje: 'Saldo recargado con éxito' });
   });
 });
+// --- RUTA 9: OBTENER VUELOS DISPONIBLES POR DESTINO ---
+app.get('/api/vuelos/:destino', (req, res) => {
+  // Buscamos vuelos que vayan a ese país y que aún tengan asientos libres
+  const query = 'SELECT * FROM flights WHERE destination_code = ? AND seats_available > 0 ORDER BY departure_date ASC';
+  
+  db.query(query, [req.params.destino], (err, results) => {
+    if (err) {
+      console.error('❌ Error al buscar vuelos:', err.message);
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
+  });
+});
 // --- INICIO DEL SERVIDOR (AL FINAL) ---
 app.listen(PORT, () => {
   console.log(`🚀 Servidor de Tsunami Viajes corriendo en http://localhost:${PORT}`);

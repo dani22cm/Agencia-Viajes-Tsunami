@@ -439,3 +439,33 @@ COMMIT;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+INSERT INTO `flights` (`origin`, `destination_code`, `departure_date`, `return_date`, `price`, `seats_available`) VALUES
+('Madrid (MAD)', 'USA', '2026-09-10 10:00:00', '2026-09-24 20:00:00', 650.00, 45),
+('Barcelona (BCN)', 'USA', '2026-10-05 12:30:00', '2026-10-15 18:00:00', 590.00, 20),
+('Madrid (MAD)', 'THA', '2026-11-01 15:00:00', '2026-11-15 09:00:00', 820.00, 35),
+('Valencia (VLC)', 'THA', '2026-12-05 08:00:00', '2026-12-20 22:30:00', 890.00, 15),
+('Bilbao (BIO)', 'GBR', '2026-05-15 07:30:00', '2026-05-20 19:00:00', 85.00, 50),
+('Sevilla (SVQ)', 'GBR', '2026-06-10 09:45:00', '2026-06-15 21:15:00', 110.00, 30),
+('Madrid (MAD)', 'ESP', '2026-08-01 11:00:00', '2026-08-10 16:00:00', 45.00, 60);
+
+INSERT INTO `countries` (`code`, `name`, `description`, `price`, `image_url`) VALUES
+('EGY', 'Egipto Místico', 'Crucero por el Nilo y visita a las Pirámides de Giza. Un viaje a la cuna de la civilización.', 1150.00, 'https://images.unsplash.com/photo-1503177119275-0aa32b3a7447'),
+('ISL', 'Islandia Glacial', 'Tierra de auroras boreales, géiseres y volcanes. Una aventura única en el Círculo Polar.', 1450.00, 'https://images.unsplash.com/photo-1476610182048-b716b8518aae'),
+('AUS', 'Australia Salvaje', 'Explora la Gran Barrera de Coral y la moderna Sídney. Naturaleza y ciudad en armonía.', 2100.00, 'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be'),
+('PER', 'Perú Ancestral', 'Visita el Machu Picchu y disfruta de la mejor gastronomía del mundo en Lima.', 1300.00, 'https://images.unsplash.com/photo-1526392060635-9d6019884377'),
+('JOR', 'Jordania Escondida', 'Descubre la ciudad rosa de Petra y duerme bajo las estrellas en el desierto de Wadi Rum.', 1200.00, 'https://images.unsplash.com/photo-1580619305218-8423a7ef79b4'),
+('ITA', 'Italia Eterna', 'Un recorrido por la Toscana, los canales de Venecia y la historia imperial de Roma.', 890.00, 'https://images.unsplash.com/photo-1523906834658-6e24ef2346f3');
+
+
+
+
+
+
+INSERT INTO `flights` (`origin`, `destination_code`, `departure_date`, `return_date`, `price`, `seats_available`) VALUES
+('Madrid (MAD)', 'EGY', '2026-11-12 09:00:00', '2026-11-22 22:00:00', 320.00, 30),
+('Madrid (MAD)', 'ISL', '2026-12-01 07:00:00', '2026-12-08 15:00:00', 180.00, 40),
+('Barcelona (BCN)', 'AUS', '2026-10-20 23:00:00', '2026-11-10 10:00:00', 1150.00, 20),
+('Madrid (MAD)', 'PER', '2026-09-05 13:00:00', '2026-09-20 21:00:00', 740.00, 30),
+('Valencia (VLC)', 'JOR', '2026-10-10 10:00:00', '2026-10-20 20:00:00', 350.00, 25),
+('Madrid (MAD)', 'ITA', '2026-06-15 09:00:00', '2026-06-22 21:00:00', 65.00, 40);
