@@ -11,7 +11,7 @@ const destacados = [
     rating: 4.6,
     itinerary: [
       '3 días en Madrid: museos y gastronomía',
-      '2 días en Sevilla: barrio de Triana y la catedral',
+      '2 días en Sevilla: barrio de Triana y la catedral asdjhlsdjkfj',
       '4 días en costa mediterránea: Barcelona y playas'
     ],
     tips: ['Reservar entradas con antelación en verano', 'Probar tapas en mercados locales']
