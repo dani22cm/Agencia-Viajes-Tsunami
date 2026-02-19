@@ -108,6 +108,23 @@ app.get('/api/wallet/:userId', (req, res) => {
     res.json(results[0] || { balance: 0 });
   });
 });
+// --- RUTA 7: HISTORIAL DE RESERVAS DEL USUARIO ---
+app.get('/api/reservas/:userId', (req, res) => {
+  // Mezclamos las tablas para devolver la foto, el nombre del país y el precio pagado
+  const query = `
+    SELECT b.id, b.booking_date, b.total_paid, b.status, p.title, c.name as country_name, c.image_url
+    FROM bookings b
+    JOIN packages p ON b.package_id = p.id
+    JOIN countries c ON p.country_code = c.code
+    WHERE b.user_id = ?
+    ORDER BY b.booking_date DESC
+  `;
+  
+  db.execute(query, [req.params.userId], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
 
 // --- INICIO DEL SERVIDOR (AL FINAL) ---
 app.listen(PORT, () => {
